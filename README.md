@@ -1,33 +1,18 @@
-## Creating Account
+Rugpull_Detector's audit profiles
 
-## The Graph Hosted service is available for Bsc.
-https://thegraph.com/hosted-service/
-https://thegraph.com/docs/en/deploying/hosted-service/
-https://thegraph.com/docs/en/developing/supported-networks/#hosted-service
+Smart contract auditing and whitehat activity are my exciting hobbies.
 
-### Chainstack Subgraph
-https://chainstack.com/subgraphs/
+You can check my achievement below.
 
-## Installing environment
-yarn global add @graphprotocol/graph-cli
+# Code4rena
+https://code4rena.com/@0xrugpull_detector
 
-## Initializing new subgraph project
-graph init --product hosted-service richardzheng8829/moai
+# Sherlock
+https://audits.sherlock.xyz/watson/rugpull_detector
 
-## Code generation
-graph codegen
+# Immnuefi
+Dashboard (./Immuefi.PNG)
+![image](Immuefi.PNG)
 
-## Building subgraph
-graph build
-
-## Deploying subgraph
-graph deploy --network goeril
-
-## Running local node
-docker-compose up
-
-## Testing with local node
-
-## Biling
-At
-https://thegraph.com/docs/en/billing/
+# Code4Hawk
+https://www.codehawks.com/profile/clknpmzwp0014l608wk9hflu6
