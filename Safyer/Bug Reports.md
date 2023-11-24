@@ -91,3 +91,51 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 ```
 
 # Token.sol
+1) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
+
+- Let's say amount = balanceOf(msg.sender).
+
+- After transfer to `to`, remaining balance will be feeAmount.
+```
+        super.transfer(to, netAmount);
+```
+- If burnFee is greater than tranferFee, burnAmount will be greater than remaining balance, thus `_burn()` will revert.
+```
+            uint256 burnAmount = amount.mul(burnFee).div(100);
+            _burn(msg.sender, burnAmount); // @audit if fee amount is smaller than burn fee, it will create insolvency.
+```
+
+2) As transfer fee is not deducted from `msg.sender`, fee to be collected is transferrable to other addresses.
+
+ - `transfer()` should send tranfer fee to treausry address, otherwise it can be transferred and fee to be collected are lost.
+```
++       _transfer(msg.sender, feeTreasury, feeAmount);
+        totalFees[msg.sender] = totalFees[msg.sender].add(feeAmount); // @audit - collected fee can be transfered.
+```
+
+3) Net transfer amount should be subtracted by burn amount.
+
+```
+-       net amount  = total amount - fee amount
++       net amount  = total amount - fee amount - burn amount
+```
+For every transfer, amount should be divided to three addresses.
+
+- net amount for `to` address
+- fee amount for `feeTreasury` address
+- burn amount for `zero` address
+
+
+```
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        uint256 feeAmount = amount.mul(transferFee).div(100);
+-       uint256 netAmount = amount.sub(feeAmount);
+-       super.transfer(to, netAmount);
+         ...
++       uint256 netAmount = amount.sub(feeAmount).sub(burnAmount);
++       super.transfer(to, netAmount);
+
+        emit FeeCollected(msg.sender, feeAmount);
+        return true;
+    }
+```
