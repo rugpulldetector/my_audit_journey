@@ -5,7 +5,7 @@
 +       collateralToken.safeTransfer(msg.sender, amount);
 ```
 2) Incompatible with fee-on-transfer or rebasing ERC20 tokens
-3) Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `disableInitializer()`
+3) Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`
 4) Should inherit upgradeable counterpart of base contracts for upgradeability
 
 # Governance.sol
@@ -31,6 +31,7 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
             hasVoted[msg.sender] = false;
         }
 ```
+5) Lack of storage gap
 
 # LendingPool.sol
 1) All borrowing token reserves can be drained by calling `borrow()` time and again with amount smaller than `collateralBalance / 1.5`.
@@ -89,6 +90,7 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
         withdrawalCooldown = cooldown;
     }
 ```
+3) Lack of storage gap
 
 # Token.sol
 1) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
