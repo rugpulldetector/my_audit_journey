@@ -5,8 +5,8 @@
 +       collateralToken.safeTransfer(msg.sender, amount);
 ```
 ### 2) Incompatible with fee-on-transfer or rebasing ERC20 tokens
-### 3) Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`
-### 4) Should inherit upgradeable counterpart of base contracts for upgradeability
+### 3) Lack of zero address parameter validation check for constructor or `initialize()` 
+### 4) For upgradeable contracts,  Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`, and it should inherit upgradeable counterpart of base contracts like `OwnableUpgradeable`.
 
 # Governance.sol
 
@@ -175,3 +175,8 @@ For every transfer, amount should be divided to three addresses.
         return true;
     }
 ```
+
+### 28) Lack of transfer fee collection mechanism
+- Transfer fee could be either escrowed to current contract or directly sent to treasury address.
+- In case transfer fee is escrowed to current current. there should be function to collect fee to treasury address.
+
