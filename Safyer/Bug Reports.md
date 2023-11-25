@@ -99,8 +99,8 @@ There should be an incentive for liquidators who liquidates undercollateralizati
 -       if (block.timestamp < cooldownEndTime) {
 -           require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed");
 -       }
-+       require(block.timestamp < cooldownEndTime[msg.sender], "Cooldown period");
-+       require(block.timestamp + withdrawalWindow >= cooldownEndTime[msg.sender], "Withdrawal window closed");
++       require(block.timestamp > cooldownEndTime[msg.sender], "Cooldown period");
++       require(block.timestamp <= cooldownEndTime[msg.sender] + withdrawalWindow, "Withdrawal window closed");
 +       cooldownEndTime[msg.sender] = block.timestamp + withdrawalCooldown;
         ...
     }
