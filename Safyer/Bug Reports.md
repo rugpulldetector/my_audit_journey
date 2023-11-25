@@ -4,9 +4,9 @@
 -       collateralToken.transfer(msg.sender, amount); // @audit -unchecked return value of transfer
 +       collateralToken.safeTransfer(msg.sender, amount);
 ```
-### 2) Incompatible with fee-on-transfer or rebasing ERC20 tokens
+### 2) Incompatibility with fee-on-transfer or rebasing ERC20 tokens
 ### 3) Lack of zero address parameter validation check for constructor or `initialize()` 
-### 4) For upgradeable contracts,  Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`, and it should inherit upgradeable counterpart of base contracts like `OwnableUpgradeable`.
+### 4) Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`, and it should inherit upgradeable counterpart of base contracts like `OwnableUpgradeable` for upgradeable contracts.
 
 # Governance.sol
 
