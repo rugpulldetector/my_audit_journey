@@ -60,7 +60,7 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 ### 13) Wrong assumption that collateral and borrowing tokens's decimals are same.
 To caluclate collateralization ratio, decimals difference should be taken into consideration.
 
-### 14) `addCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
+### 14) `addCollateralAllowance`,`removeCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
 - `increaseAllowance`, `decreaseAllowance` functions are preferred.
 
 ### 15) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
@@ -85,6 +85,22 @@ To caluclate collateralization ratio, decimals difference should be taken into c
 There should be an incentive for liquidators who liquidates undercollateralization position.
 
 # LiquidityPool.sol
+
+### 29) Cooldown end time should be mapping storage variable per each address, it should be updated at withdraw().
+```
+    mapping(address => uint256) public cooldownEndTime;
+
+    function withdraw(uint256 amount) public nonReentrant whenNotPaused {
+        ...
+-       uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
+-       if (block.timestamp < cooldownEndTime) {
++       if (block.timestamp < cooldownEndTime[msg.sender]) {
+            require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed");
+        }
++       cooldownEndTime[msg.sender] = block.timestamp + withdrawalCooldown;
+        ...
+    }
+```
 ### 20) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
 ```
         uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
@@ -103,9 +119,11 @@ There should be an incentive for liquidators who liquidates undercollateralizati
     }
 ```
 ### 22) Lack of storage gap
+### 23) Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
+
 
 # Token.sol
-### 23) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
+### 24) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
 
 - Let's say amount = balanceOf(msg.sender).
 
@@ -119,7 +137,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             _burn(msg.sender, burnAmount); // @audit if fee amount is smaller than burn fee, it will create insolvency.
 ```
 
-### 24) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
+### 25) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
 
  - `transfer()` should send tranfer fee to treausry address, otherwise it can be transferred and fee to be collected are lost.
 ```
@@ -127,7 +145,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         totalFees[msg.sender] = totalFees[msg.sender].add(feeAmount); // @audit - collected fee can be transfered.
 ```
 
-### 25) Net transfer amount should be subtracted by burn amount.
+### 26) Net transfer amount should be subtracted by burn amount.
 
 ```
 -       net amount  = total amount - fee amount
