@@ -86,7 +86,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
 
 # LiquidityPool.sol
 
-### 29) Cooldown end time should be mapping storage variable per each address, it should be updated at withdraw().
+### 20) Cooldown end time should be mapping storage variable per each address, it should be updated at withdraw().
 ```
     mapping(address => uint256) public cooldownEndTime;
 
@@ -101,7 +101,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         ...
     }
 ```
-### 20) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
+### 21) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
 ```
         uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
         if (block.timestamp < cooldownEndTime) {
@@ -109,7 +109,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed"); 
         } 
 ```
-### 21) Wrong access control for `setWithdrawCooldown()`
+### 22) Wrong access control for `setWithdrawCooldown()`
 
 ```
     function setWithdrawalCooldown(uint256 cooldown) public {
@@ -118,12 +118,12 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         withdrawalCooldown = cooldown;
     }
 ```
-### 22) Lack of storage gap
-### 23) Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
+### 23) Lack of storage gap
+### 24) Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
 
 
 # Token.sol
-### 24) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
+### 25) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
 
 - Let's say amount = balanceOf(msg.sender).
 
@@ -137,7 +137,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             _burn(msg.sender, burnAmount); // @audit if fee amount is smaller than burn fee, it will create insolvency.
 ```
 
-### 25) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
+### 26) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
 
  - `transfer()` should send tranfer fee to treausry address, otherwise it can be transferred and fee to be collected are lost.
 ```
@@ -145,7 +145,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         totalFees[msg.sender] = totalFees[msg.sender].add(feeAmount); // @audit - collected fee can be transfered.
 ```
 
-### 26) Net transfer amount should be subtracted by burn amount.
+### 27) Net transfer amount should be subtracted by burn amount.
 
 ```
 -       net amount  = total amount - fee amount
