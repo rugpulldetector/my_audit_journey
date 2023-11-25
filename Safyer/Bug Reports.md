@@ -60,32 +60,32 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 ### 13) Wrong assumption that collateral and borrowing tokens's decimals are same.
 To caluclate collateralization ratio, decimals difference should be taken into consideration.
 
-### 18) `addCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
+### 14) `addCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
 - `increaseAllowance`, `decreaseAllowance` functions are preferred.
 
-### 14) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
+### 15) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
 
 ```
 -    function removeCollateral(uint256 amount) public nonReentrant {
 +    function removeCollateral(uint256 amount) public whenNotPaused nonReentrant {
 ```
 
-### 15) Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
+### 16) Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
 
 ```
         uint256 interest = amount.mul(interestRate).div(100);
         uint256 totalRepayment = amount.add(interest);
 ```
 
-### 16) No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
+### 17) No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
 
-### 17) Unused `collateralizationBonus` maybe for liquidator.
+### 18) Unused `collateralizationBonus` maybe for liquidator.
 
-### 18) No liquidation mechanism to keep TCR healthy
+### 19) No liquidation mechanism to keep TCR healthy
 There should be an incentive for liquidators who liquidates undercollateralization position.
 
 # LiquidityPool.sol
-### 16) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
+### 20) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
 ```
         uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
         if (block.timestamp < cooldownEndTime) {
@@ -93,7 +93,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed"); 
         } 
 ```
-### 17) Wrong access control for `setWithdrawCooldown()`
+### 21) Wrong access control for `setWithdrawCooldown()`
 
 ```
     function setWithdrawalCooldown(uint256 cooldown) public {
@@ -102,10 +102,10 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         withdrawalCooldown = cooldown;
     }
 ```
-### 18) Lack of storage gap
+### 22) Lack of storage gap
 
 # Token.sol
-### 19) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
+### 23) If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
 
 - Let's say amount = balanceOf(msg.sender).
 
@@ -119,7 +119,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             _burn(msg.sender, burnAmount); // @audit if fee amount is smaller than burn fee, it will create insolvency.
 ```
 
-### 20) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
+### 24) Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
 
  - `transfer()` should send tranfer fee to treausry address, otherwise it can be transferred and fee to be collected are lost.
 ```
@@ -127,7 +127,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         totalFees[msg.sender] = totalFees[msg.sender].add(feeAmount); // @audit - collected fee can be transfered.
 ```
 
-### 21) Net transfer amount should be subtracted by burn amount.
+### 25) Net transfer amount should be subtracted by burn amount.
 
 ```
 -       net amount  = total amount - fee amount
