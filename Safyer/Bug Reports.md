@@ -86,7 +86,10 @@ There should be an incentive for liquidators who liquidates undercollateralizati
 
 # LiquidityPool.sol
 
-### 20) Cooldown end time should be mapping storage variable per each address, it should be updated at withdraw().
+### 20) Wrong logic for cooldown and withdrawal window check. 
+- Cooldown end time should be mapping storage variable per each address.
+- block.timestamp should be between [cooldownEndTime, cooldownEndTime + withdrawalWindow]
+- It should be updated after successful withdrawal.
 ```
     mapping(address => uint256) public cooldownEndTime;
 
@@ -94,9 +97,10 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         ...
 -       uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
 -       if (block.timestamp < cooldownEndTime) {
-+       if (block.timestamp < cooldownEndTime[msg.sender]) {
-            require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed");
-        }
+-           require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed");
+-       }
++       require(block.timestamp < cooldownEndTime[msg.sender], "Cooldown period");
++       require(block.timestamp + withdrawalWindow >= cooldownEndTime[msg.sender], "Withdrawal window closed");
 +       cooldownEndTime[msg.sender] = block.timestamp + withdrawalCooldown;
         ...
     }
