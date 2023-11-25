@@ -1,10 +1,19 @@
+# Sayfer Audit Report
+
+## 29 Issues Found
+- 3 Critical
+- 5 High
+- 10 Medium
+- 3 Low
+- 8 Informational
+
 # General
 ### 1) High - Unchecked returned value of transfer of ERC20 token, Should use `SafeERC20.safeTransfer`.
 ```
 -       collateralToken.transfer(msg.sender, amount); // @audit -unchecked return value of transfer
 +       collateralToken.safeTransfer(msg.sender, amount);
 ```
-### 2) Low - Incompatibility with fee-on-transfer or rebasing ERC20 tokens
+### 2) Medium - Incompatibility with fee-on-transfer or rebasing ERC20 tokens
 ### 3) Low - Lack of zero address parameter validation check for constructor or `initialize()` 
 ### 4) Informational - Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`, and it should inherit upgradeable counterpart of base contracts like `OwnableUpgradeable` for upgradeable contracts.
 
@@ -64,7 +73,7 @@ To caluclate collateralization ratio, decimals difference should be taken into c
 ### 15) Medium - `addCollateralAllowance`,`removeCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
 - `increaseAllowance`, `decreaseAllowance` functions are preferred.
 
-### 16) Meidum - Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
+### 16) Medium - Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
 
 ```
 -    function removeCollateral(uint256 amount) public nonReentrant {
