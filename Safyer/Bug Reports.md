@@ -54,11 +54,14 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 +       require(collateralBalance[msg.sender] >= borrowBalance.mul(minCollateralRatio).div(100), "Insufficient collateral"); 
 ```
 
-### 12) Wrong assumption that collateral and borrowing tokens's prices are of are pegged to each other.
+### 12) Wrong assumption that collateral and borrowing tokens's prices are pegged to each other.
 - To calculate collateralization ratio, there should be an oracle that feeds prices of collateral and borrowing token 
 
 ### 13) Wrong assumption that collateral and borrowing tokens's decimals are same.
 To caluclate collateralization ratio, decimals difference should be taken into consideration.
+
+### 18) `addCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
+- `increaseAllowance`, `decreaseAllowance` functions are preferred.
 
 ### 14) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
 
