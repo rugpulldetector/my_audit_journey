@@ -54,23 +54,32 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 +       require(collateralBalance[msg.sender] >= borrowBalance.mul(minCollateralRatio).div(100), "Insufficient collateral"); 
 ```
 
-### 12) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
+### 12) Wrong assumption that collateral and borrowing tokens's prices are of are pegged to each other.
+- To calculate collateralization ratio, there should be an oracle that feeds prices of collateral and borrowing token 
+
+### 13) Wrong assumption that collateral and borrowing tokens's decimals are same.
+To caluclate collateralization ratio, decimals difference should be taken into consideration.
+
+### 14) Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
 
 ```
 -    function removeCollateral(uint256 amount) public nonReentrant {
 +    function removeCollateral(uint256 amount) public whenNotPaused nonReentrant {
 ```
 
-### 13) Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
+### 15) Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
 
 ```
         uint256 interest = amount.mul(interestRate).div(100);
         uint256 totalRepayment = amount.add(interest);
 ```
 
-### 14) No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
+### 16) No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
 
-### 15) Unused `collateralizationBonus` maybe for liquidator.
+### 17) Unused `collateralizationBonus` maybe for liquidator.
+
+### 18) No liquidation mechanism to keep TCR healthy
+There should be an incentive for liquidators who liquidates undercollateralization position.
 
 # LiquidityPool.sol
 ### 16) Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
