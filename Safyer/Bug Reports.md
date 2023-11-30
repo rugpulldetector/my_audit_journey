@@ -14,8 +14,31 @@
 +       collateralToken.safeTransfer(msg.sender, amount);
 ```
 ### 2) Medium - Incompatibility with fee-on-transfer or rebasing ERC20 tokens
+
 ### 3) Low - Lack of zero address parameter validation check for constructor or `initialize()` 
-### 4) Informational - Lack of `__Ownable_init()` and `__ReentrancyGuard_init()` at initialize(), constructor with `_disableInitializer()`, and it should inherit upgradeable counterpart of base contracts like `OwnableUpgradeable` for upgradeable contracts.
+
+```
+    function initialize(address _liquidityToken) public initializer() {
+        require(liquidityToken != address(0), "Zero address");
+        ...
+    }
+```
+### 4) Informational - If upgradeability was intented, it should inherit upgradeable counterpart of base contracts
+- Lack of `__Ownable_init()`, `__ReentrancyGuard_init()`, `__Pausable_init()` at initialize()
+- constructor with `_disableInitializer()`
+```
+contract LiquidityPool is Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
+    constructor () {
+        _disableInitializer();
+    }
+
+    function initialize(address _liquidityToken) public initializer() {
+        __Ownable_init();
+        __ReentrancyGuard_init();
+        __Pausable_init();
+        ...
+    }
+```
 
 # Governance.sol
 
@@ -27,14 +50,14 @@
 ### 6) High - Number of votes cast for proposal are not counted in `vote` or `revokeVote`.
 
 ### 7) High - No checkpointing mechanism by block number.
-- `createProposal()` should record block number
-- voter's balance and total supply at block number of proposal creation should be used for vote counting given proposal.
+- `createProposal()` should record block number at which proposal was created.
+- Voter's checkpointed past balance and total supply at proposal creation block number should be used for vote counting given proposal.
 
 ### 8) Medium - It allows voter to vote multiple times, and it consume voter's balance each time, which is not required.
 - If voter has changed mind, he can revoke vote, so there's no need to allow voting twice.
 
 ```
-        require(voted[msg.sender] == false, "No second voting"); // @audit - no double voting
++       require(voted[msg.sender] == false, "No second voting"); // @audit - no double voting
 ```
 
 ### 9) Medium - Total supply is not updated when balanceOf is updated at `createProposal()`, `vote()`, `revokeVote()`
@@ -43,18 +66,35 @@ balanceOf[msg.sender] = balanceOf[msg.sender].sub(proposalDeposit);
 balanceOf[msg.sender] = balanceOf[msg.sender].sub(1);
 balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 ```
+
 ### 10) Low - No upper limit for `quorumPercentage`. If quorumPercentage is over 100%, no proposal can be executed.
-
-### 11) Low - Can revoke vote after voting duration has passed.
-
-### 12) Informational - Unreachable code
 ```
+    function setQuorumPercentage(uint256 percentage) public onlyOwner {
++       require(percentage < 100000, "Upper limit of quorum");
+        ...
+    }
+```
+### 11) Low - Can revoke vote after voting duration has passed.
+```
+    function revokeVote(uint256 proposalId) public nonReentrant onlyExistingProposal(proposalId) {
+        Proposal storage proposal = proposals[proposalId];
++        require(block.timestamp < proposal.votingEndTime, "Voting has ended");
+        ...
+   }
+```
+
+### 12) Informational - Unreachable code because of require() at the start of function.
+```
+    function executeproposal(uint256 proposalId) public nonReentrant onlyExistingProposal(proposalId) {
+        ...
+        require(block.timestamp < proposal.votingEndTime, "Voting has ended");
+        ...
         if (block.timestamp >= proposal.votingEndTime) {
             // If voting ends, reset hasVoted status
             hasVoted[msg.sender] = false;
         }
 ```
-### 13) Informational - Lack of storage gap
+### 13) Informational - Lack of storage gap if upgradeability was inteneded
 
 # LendingPool.sol
 ### 14) Critical - All borrowing token reserves can be drained by calling `borrow()` time and again with amount smaller than `collateralBalance / 1.5`.
@@ -81,7 +121,11 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 - To calculate collateralization ratio, there should be an oracle that feeds prices of collateral and borrowing token 
 
 ### 17) Medium - Wrong assumption that collateral and borrowing tokens's decimals are same.
-To caluclate collateralization ratio, decimals difference should be taken into consideration.
+- To caluclate collateralization ratio, decimals difference should be taken into consideration.
+
+```
++       uint256 debtInCollateralToken = debt * 10 ** collateralToken.decimals() / 10 ** borrowedToken.decimals();
+```
 
 ### 18) Medium - `addCollateralAllowance`,`removeCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
 - `increaseAllowance`, `decreaseAllowance` functions are preferred.
@@ -145,7 +189,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         withdrawalCooldown = cooldown;
     }
 ```
-### 27) Informational - Lack of storage gap
+### 27) Informational - Lack of storage gap if upgradeability was inteneded
 ### 28) Informational - Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
 
 
