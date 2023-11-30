@@ -22,11 +22,14 @@ https://www.codehawks.com/profile/clknpmzwp0014l608wk9hflu6
 - DittoETH
 - Sparkn
 
-# Immunefi bug bounty
+# Immunefi bug bounty(7 Paid Report, 15k+ USD Bounty)
 - OpenZeppelin
 - Charm Finance
 - Radiant Capital
 - Alchemix Finance
 - Ajna
+- Lybra Finance
+- Arkham Intelligence
+
 ![image](Immuefi.PNG)
 
