@@ -55,12 +55,21 @@ contract LiquidityPool is Initializable, OwnableUpgradeable, PausableUpgradeable
 
 ### 8) Medium - It allows voter to vote multiple times, and it consume voter's balance each time, which is not required.
 - If voter has changed mind, he can revoke vote, so there's no need to allow voting twice.
-
+- There should be a mapping to keep track of each voter and vote's proposal.
+- It should be checked if already voted, after voting, mapping should be updated.
 ```
-+       require(voted[msg.sender] == false, "No second voting"); // @audit - no double voting
++   mapping(address => mapping(uint256 => bool)) public hasVotedOnProposal;
+    function vote(uint256 proposalId) public nonReentrant onlyExistingProposal(proposalId) {
++       require(hasVotedOnProposal[msg.sender][proposalId] == false, "No second voting"); // @audit - no double voting
++       hasVotedOnProposal[msg.sender][proposalId] = true;
 ```
 
 ### 9) Medium - Total supply is not updated when balanceOf is updated at `createProposal()`, `vote()`, `revokeVote()`
+Here's invariant that needs to be kept in any case.
+```
+Total supply = Sum of all voters' balance
+```
+Here's code snippets where invariant is not kept.
 ```
 balanceOf[msg.sender] = balanceOf[msg.sender].sub(proposalDeposit);
 balanceOf[msg.sender] = balanceOf[msg.sender].sub(1);
