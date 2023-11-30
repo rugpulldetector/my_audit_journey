@@ -1,9 +1,9 @@
 # Sayfer Audit Report
 
-## 31 Issues Found
+## 32 Issues Found
 - 3 Critical
 - 5 High
-- 11 Medium
+- 12 Medium
 - 4 Low
 - 8 Informational
 
@@ -30,27 +30,34 @@
 - `createProposal()` should record block number
 - voter's balance and total supply at block number of proposal creation should be used for vote counting given proposal.
 
-### 8) Medium - Total supply is not updated when balanceOf is updated at `createProposal()`, `vote()`, `revokeVote()`
+### 8) Medium - It allows voter to vote multiple times, and it consume voter's balance each time, which is not required.
+- If voter has changed mind, he can revoke vote, so there's no need to allow voting twice.
+
+```
+        require(voted[msg.sender] == false, "No second voting"); // @audit - no double voting
+```
+
+### 9) Medium - Total supply is not updated when balanceOf is updated at `createProposal()`, `vote()`, `revokeVote()`
 ```
 balanceOf[msg.sender] = balanceOf[msg.sender].sub(proposalDeposit);
 balanceOf[msg.sender] = balanceOf[msg.sender].sub(1);
 balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 ```
-### 9) Low - No upper limit for `quorumPercentage`. If quorumPercentage is over 100%, no proposal can be executed.
+### 10) Low - No upper limit for `quorumPercentage`. If quorumPercentage is over 100%, no proposal can be executed.
 
-### 10) Low - Can revoke vote after voting duration has passed.
+### 11) Low - Can revoke vote after voting duration has passed.
 
-### 11) Informational - Unreachable code
+### 12) Informational - Unreachable code
 ```
         if (block.timestamp >= proposal.votingEndTime) {
             // If voting ends, reset hasVoted status
             hasVoted[msg.sender] = false;
         }
 ```
-### 12) Informational - Lack of storage gap
+### 13) Informational - Lack of storage gap
 
 # LendingPool.sol
-### 13) Critical - All borrowing token reserves can be drained by calling `borrow()` time and again with amount smaller than `collateralBalance / 1.5`.
+### 14) Critical - All borrowing token reserves can be drained by calling `borrow()` time and again with amount smaller than `collateralBalance / 1.5`.
 
 - CR should be calculated as `Collateral / Debt` not `Collateral / Borrowing Amount`.
 
@@ -62,7 +69,7 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 +       require(collateralBalance[msg.sender] >= borrowBalance.mul(minCollateralRatio).div(100), "Insufficient collateral"); 
 ```
 
-### 14) Critical - Collateral can be removed without repaying remaining debt.
+### 15) Critical - Collateral can be removed without repaying remaining debt.
 ```
     function removeCollateral(uint256 amount) public nonReentrant {
         ...
@@ -70,39 +77,39 @@ balanceOf[msg.sender] = balanceOf[msg.sender].add(1);
 +       require(collateralBalance[msg.sender] >= borrowBalance.mul(minCollateralRatio).div(100), "Insufficient collateral"); 
 ```
 
-### 15) Medium - Wrong assumption that collateral and borrowing tokens's prices are pegged to each other.
+### 16) Medium - Wrong assumption that collateral and borrowing tokens's prices are pegged to each other.
 - To calculate collateralization ratio, there should be an oracle that feeds prices of collateral and borrowing token 
 
-### 16) Medium - Wrong assumption that collateral and borrowing tokens's decimals are same.
+### 17) Medium - Wrong assumption that collateral and borrowing tokens's decimals are same.
 To caluclate collateralization ratio, decimals difference should be taken into consideration.
 
-### 17) Medium - `addCollateralAllowance`,`removeCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
+### 18) Medium - `addCollateralAllowance`,`removeCollateralAllowance` can be frontrun by `addCollateral()` to spend remaining allowance and bypass lowered allowance. It's like `apporve` / `transferFrom`.
 - `increaseAllowance`, `decreaseAllowance` functions are preferred.
 
-### 18) Medium - Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
+### 19) Medium - Important operations like `addCollateral()`, `removeCollateral()`, `borrow()`, `repay()` are not pausable because of missing `whenNotPaused` modifier.
 
 ```
 -    function removeCollateral(uint256 amount) public nonReentrant {
 +    function removeCollateral(uint256 amount) public whenNotPaused nonReentrant {
 ```
 
-### 19) Medium - No liquidation mechanism to keep TCR healthy
+### 20) Medium - No liquidation mechanism to keep TCR healthy
 There should be an incentive for liquidators who liquidates undercollateralization position.
 
-### 20) Low - No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
+### 21) Low - No upper limit for interest rate, owner can rug user by sandwiching `borrow()` with `setInterestRate()`.
 
-### 21) Informational - Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
+### 22) Informational - Theres' no incentive for borrower to repay earlier because interest to be paid is calculated only once and does not grow over time.
 
 ```
         uint256 interest = amount.mul(interestRate).div(100);
         uint256 totalRepayment = amount.add(interest);
 ```
 
-### 22) Informational - Unused `collateralizationBonus` maybe for liquidator.
+### 23) Informational - Unused `collateralizationBonus` maybe for liquidator.
 
 # LiquidityPool.sol
 
-### 23) High - Wrong logic for cooldown and withdrawal window check. 
+### 24) High - Wrong logic for cooldown and withdrawal window check. 
 - Cooldown end time should be mapping storage variable per each address.
 - block.timestamp should be between [cooldownEndTime, cooldownEndTime + withdrawalWindow]
 - It should be updated after successful withdrawal.
@@ -121,7 +128,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         ...
     }
 ```
-### 24) High - Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
+### 25) High - Unable to withdraw if `withdrawalCooldown` >= `withdrawalWindow` which is true by default
 ```
         uint256 cooldownEndTime = block.timestamp + withdrawalCooldown;
         if (block.timestamp < cooldownEndTime) {
@@ -129,7 +136,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             require(block.timestamp + withdrawalWindow >= cooldownEndTime, "Withdrawal window closed"); 
         } 
 ```
-### 25) Medium - Wrong access control for `setWithdrawCooldown()`
+### 26) Medium - Wrong access control for `setWithdrawCooldown()`
 
 ```
     function setWithdrawalCooldown(uint256 cooldown) public {
@@ -138,12 +145,12 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         withdrawalCooldown = cooldown;
     }
 ```
-### 26) Informational - Lack of storage gap
-### 27) Informational - Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
+### 27) Informational - Lack of storage gap
+### 28) Informational - Missing event for important parameter changes like `minCollateralRatio`, `interestRate`, `maxLoanAmount`, `collateralizationBonus`
 
 
 # Token.sol
-### 28) Medium - If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
+### 29) Medium - If `burnFee` is greater than `transferFee`, it might revert because of lack of token balance.
 
 - Let's say amount = balanceOf(msg.sender).
 
@@ -157,7 +164,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
             _burn(msg.sender, burnAmount); // @audit if fee amount is smaller than burn fee, it will create insolvency.
 ```
 
-### 29) Medium - Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
+### 30) Medium - Transfer fee to be collected can be lost, as it is not deducted from `msg.sender`.
 
  - `transfer()` should send tranfer fee to treausry address, otherwise it can be transferred and fee to be collected are lost.
 ```
@@ -165,7 +172,7 @@ There should be an incentive for liquidators who liquidates undercollateralizati
         totalFees[msg.sender] = totalFees[msg.sender].add(feeAmount); // @audit - collected fee can be transfered.
 ```
 
-### 30) Medium - Net transfer amount should be subtracted by burn amount.
+### 31) Medium - Net transfer amount should be subtracted by burn amount.
 
 ```
 -       net amount  = total amount - fee amount
@@ -192,7 +199,7 @@ For every transfer, amount should be divided to three addresses.
     }
 ```
 
-### 31) Informational - Lack of transfer fee collection mechanism
+### 32) Informational - Lack of transfer fee collection mechanism
 - Transfer fee could be either escrowed to current contract or directly sent to treasury address.
 - In case transfer fee is escrowed to current current. there should be function to collect fee to treasury address.
 
