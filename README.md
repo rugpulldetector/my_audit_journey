@@ -5,7 +5,7 @@ Smart contract auditing and whitehat activity are my exciting hobbies.
 You can check my achievement below.
 
 # Immunefi bug bounty(11 Paid Report, 55k+ USD payout)
-- Radiant Capital(45k)
+- Radiant Capital(5k)
 - OpenZeppelin(1.5k)
 - Charm Finance(5k)
 - Arkham Intelligence(7500 ARKM)
