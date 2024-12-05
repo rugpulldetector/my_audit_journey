@@ -18,6 +18,7 @@ https://immunefi.com/profile/rugpull_detector/
 https://code4rena.com/@0xrugpull_detector
 - Tapioca
 - Kelp DAO
+- Vultisig
 
 ## Sherlock
 https://audits.sherlock.xyz/watson/rugpull_detector
