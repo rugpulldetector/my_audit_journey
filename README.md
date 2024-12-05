@@ -4,7 +4,8 @@ Smart contract auditing and whitehat activity are my exciting hobbies.
 
 You can check my achievement below.
 
-# Immunefi bug bounty(11 Paid Report, 55k+ USD payout)
+# Immunefi bug bounty(11 Paid Report, 66k+ USD payout, #147 Ranking)
+https://immunefi.com/profile/rugpull_detector/
 - Radiant Capital(5k)
 - OpenZeppelin(1.5k)
 - Charm Finance(5k)
@@ -29,5 +30,4 @@ https://www.codehawks.com/profile/clknpmzwp0014l608wk9hflu6
 - DittoETH
 - Sparkn
 
-![image](Immuefi.PNG)
 
